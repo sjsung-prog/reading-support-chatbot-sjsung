@@ -1,0 +1,10 @@
+streamlit>=1.32
+
+langchain>=0.3.0
+langchain-community>=0.3.0
+langchain-core>=0.3.0
+langchain-upstage
+
+chromadb>=0.4.24
+requests
+gdown
