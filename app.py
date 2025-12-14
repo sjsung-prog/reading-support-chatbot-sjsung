@@ -188,7 +188,7 @@ if user_input:
     with st.chat_message("assistant"):
         with st.spinner("생각 중입니다..."):
             # ✅ (추가) 문서명 표시를 위해 docs를 먼저 얻어둠 (코랩 재실행 필요 없음)
-            docs = retriever.get_relevant_documents(user_input)
+            docs = retriever.invoke(user_input)
 
             # 기존 RAG 호출
             answer = rag_chain.invoke(user_input)
