@@ -119,7 +119,7 @@ rag_chain = load_rag_chain()
 # -------------------------
 st.set_page_config(page_title="학교도서관 독서활동 지원 RAG 챗봇", page_icon="📚")
 
-st.title("📚 학교도서관 독서활동 지원 챗봇 📚")
+st.title("📚 학교도서관 독서활동 지원 챗봇")
 st.caption("도서관 소장자료와 독서교육 자료를 참고하여 독서 관련 질문에 답해주는 챗봇입니다.")
 
 with st.sidebar:
