@@ -130,7 +130,6 @@ def load_rag_chain():
     | StrOutputParser()
 )
 
-        st.caption("※ 입력할수록 추천 정확도가 높아집니다.")
 
     else:  # 독서활동
         st.markdown("**독서활동 관련 도움을 드려요**")
