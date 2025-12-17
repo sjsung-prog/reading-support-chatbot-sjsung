@@ -140,7 +140,7 @@ with st.sidebar:
     level = "없음"
 
     if menu == "도서관 이용 안내":
-        st.markdown("**ℹ️ 도서관 이용 방법*")
+        st.markdown("**ℹ️ 도서관 이용 방법**")
         st.caption("예: 대출/반납 방법, 이용시간, 도서 검색 안내 등")
 
         st.write("") 
