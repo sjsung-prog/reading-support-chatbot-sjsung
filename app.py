@@ -130,6 +130,60 @@ def load_rag_chain():
     | StrOutputParser()
 )
 
+ return rag_chain
+
+
+rag_chain = load_rag_chain()
+
+
+# -------------------------
+# UI
+# -------------------------
+st.title("📚 학교도서관 독서활동 지원 챗봇")
+st.caption("도서관 소장자료와 독서교육 자료를 참고하여 독서 관련 질문에 답해주는 챗봇입니다.")
+
+
+with st.sidebar:
+    st.subheader("📌 메뉴")
+
+    menu = st.radio(
+        "기능 선택",
+        ["도서관 이용 안내", "책 추천", "독서활동"],
+        index=0,
+        label_visibility="collapsed"
+    )
+
+    st.divider()
+
+    # 기본값
+    grade = "없음"
+    interest = ""
+    level = "없음"
+
+    if menu == "도서관 이용 안내":
+        st.markdown("**ℹ️ 도서관 이용 방법**")
+        st.caption("예: 대출/반납 방법, 이용시간, 도서 검색 안내 등")
+
+        st.write("") 
+
+        st.markdown("**예시 질문**")
+        st.caption("• 대출 권수와 기간이 어떻게 돼?")
+        st.caption("• 도서관 홈페이지 이용법 알려줘.")
+        st.caption("• 신간도서 신청하려면 어떻게 해?")
+
+
+    elif menu == "책 추천":
+        st.markdown("**🎯 맞춤형 도서 추천**")
+
+        grade = st.selectbox("학년", ["초등", "중등", "고등"])
+        interest = st.text_input("관심 주제 (예: 우정, 추리, 과학)", "")
+        level = st.select_slider(
+            "읽기 수준",
+            options=["쉬움", "보통", "어려움"],
+            value="보통"
+        )
+
+        st.caption("※ 입력할수록 추천 정확도가 높아집니다.")
 
     else:  # 독서활동
         st.markdown("**독서활동 관련 도움을 드려요**")
@@ -141,6 +195,13 @@ def load_rag_chain():
 
         st.write("") 
 
+        st.markdown("**예시 질문**")
+        st.caption("• 독후감 서론을 어떻게 시작하면 좋을까?")
+        st.caption("• 독서토론 질문을 잘 만드는 방법은?")
+        st.caption("• 서평과 독후감 차이가 뭐야?")
+
+
+
 # 채팅 히스토리
 if "messages" not in st.session_state:
     st.session_state["messages"] = []
@@ -150,7 +211,7 @@ for msg in st.session_state["messages"]:
         st.markdown(msg["content"])
 
 
-user_input = st.chat_input("궁금한 것을 물어보세요.")
+user_input = st.chat_input("궁금한 것을 입력하세요.")
 
 if user_input:
     st.session_state["messages"].append({"role": "user", "content": user_input})
@@ -171,8 +232,12 @@ if user_input:
                 "question": question_for_rag,
                 "profile": profile,
                 "menu": menu
-                "mode_guide": MODE_PROMPT.get(menu, "")
             })
             st.markdown(answer)
 
     st.session_state["messages"].append({"role": "assistant", "content": answer})
+   
+
+
+
+  
