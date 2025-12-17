@@ -34,6 +34,29 @@ BASE_PROMPT = """
 """
 
 
+# ✅ 기능별 보조 지침 (BASE_PROMPT에 +알파로만 적용)
+MODE_PROMPT = {
+    "도서관 이용 안내": """
+[추가 지침]
+- 도서관 이용 안내 질문에는 절차와 규정을 중심으로 설명해줘.
+- 단계별(①②③)로 정리하고, 불필요한 감상적 표현은 줄여줘.
+- 학생이 바로 행동으로 옮길 수 있도록 구체적으로 안내해줘.
+""",
+    "책 추천": """
+[추가 지침]
+- 책 추천 질문에는 학생 정보(학년/관심/읽기수준)를 적극 반영해줘.
+- 추천 이유를 반드시 함께 제시해줘.
+- 한 번에 너무 많은 책을 나열하지 말고 3권 내외로 추천해줘.
+""",
+    "독서활동": """
+[추가 지침]
+- 독서활동 질문에는 실제 활용 가능한 예시를 포함해줘.
+- 읽기·쓰기·토론 중 어떤 활동인지 구분해서 설명해줘.
+- 학생이 바로 써먹을 수 있는 문장 예시나 질문 예시를 제시해줘.
+"""
+}
+
+
 def download_and_unpack_chroma_db():
     file_id = "1XXyTjn8-yxa795E3k4stplJfNdFDyro2"
     url = f"https://drive.google.com/uc?id={file_id}"
@@ -71,9 +94,12 @@ def load_rag_chain():
 
     retriever = vectorstore.as_retriever(search_kwargs={"k": 4})
 
-    # ✅ BASE_PROMPT + 추가 블록 (붙이기만 함)
-    prompt = ChatPromptTemplate.from_template(
-        BASE_PROMPT + """
+    
+# ✅ BASE_PROMPT + 추가 블록 (붙이기만 함) 
+prompt = ChatPromptTemplate.from_template(
+    BASE_PROMPT
+    + MODE_PROMPT.get(menu, "")
+    + """
 
 [현재 기능]
 {menu}
@@ -81,18 +107,14 @@ def load_rag_chain():
 [학생 정보]
 {profile}
 
-지침:
-- '책 추천' 질문이면 학생 정보(학년/관심/읽기수준)를 반영해 추천
-- 정보가 없으면 일반적인 기준으로 안내
-- 문서에 없으면 모른다고 솔직하게 말해
-
 [참고 문서]
 {context}
 
 [학생의 질문]
 {question}
 """
-    )
+)
+
 
     llm = ChatUpstage()
 
@@ -215,4 +237,3 @@ if user_input:
             st.markdown(answer)
 
     st.session_state["messages"].append({"role": "assistant", "content": answer})
-
