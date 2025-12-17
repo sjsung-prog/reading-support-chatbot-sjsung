@@ -140,8 +140,14 @@ with st.sidebar:
     level = "없음"
 
     if menu == "도서관 이용 안내":
-        st.markdown("**도서관 이용 방법 안내**")
-        st.caption("대출·반납·연장·이용 규정 등")
+        st.markdown("**도서관 이용 방법에 대해 답해드립니다.**")
+        st.caption("예: 대출/반납 방법, 이용시간, 도서 검색 안내 등")
+
+        st.markdown("**예시 질문**")
+        st.caption("• 대출 권수와 기간이 어떻게 돼?")
+        st.caption("• 도서관 홈페이지 이용법 알려줘.")
+        st.caption("• 신간도서 신청하려면 어떻게 해?")
+
 
     elif menu == "책 추천":
         st.markdown("**학생 프로필 기반 책 추천**")
@@ -156,11 +162,19 @@ with st.sidebar:
 
         st.caption("※ 입력할수록 추천 정확도가 높아집니다.")
 
-    else:
-        st.markdown("**독서활동 지원**")
+    else:  # 독서활동
+        st.markdown("**독서활동 관련 도움을 드려요.**")
+
+        # 회색 글씨로 연하게
         st.caption("📖 읽기 활동 ex) 올바른 독서법")
-        st.caption("✍️ 쓰기 활동 ex) 독서감상문, 서평")
-        st.caption("👥 그룹 활동 ex) 독서토론, 독서동아리")
+        st.caption("✍️ 쓰기 활동 ex) 독서감상문, 서평, 독서논술 등")
+        st.caption("👥 그룹 활동 ex) 독서토론, 독서동아리 등")
+
+        st.markdown("**예시 질문**")
+        st.caption("• 독후감 서론을 어떻게 시작하면 좋을까?")
+        st.caption("• 독서토론 질문을 잘 만드는 방법은?")
+        st.caption("• 서평과 독후감 차이가 뭐야?")
+
 
 
 # 채팅 히스토리
