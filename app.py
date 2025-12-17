@@ -130,7 +130,7 @@ def load_rag_chain():
     | StrOutputParser()
 )
 
- return rag_chain
+return rag_chain
 
 
 rag_chain = load_rag_chain()
