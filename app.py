@@ -167,8 +167,8 @@ with st.sidebar:
         st.write("") 
 
         st.markdown("**예시 질문**")
+        st.caption("• 도서관 이용규칙에 대해 알려줘.")
         st.caption("• 대출 권수와 기간이 어떻게 돼?")
-        st.caption("• 도서관 홈페이지 이용법 알려줘.")
         st.caption("• 신간도서 신청하려면 어떻게 해?")
 
 
