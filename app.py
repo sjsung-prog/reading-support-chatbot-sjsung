@@ -95,8 +95,8 @@ def load_rag_chain():
     retriever = vectorstore.as_retriever(search_kwargs={"k": 4})
 
     
-# ✅ BASE_PROMPT + 추가 블록 (붙이기만 함) 
-prompt = ChatPromptTemplate.from_template(
+    # ✅ BASE_PROMPT + 추가 블록 (붙이기만 함) 
+    prompt = ChatPromptTemplate.from_template(
     BASE_PROMPT
     + MODE_PROMPT.get(menu, "")
     + """
@@ -115,7 +115,7 @@ prompt = ChatPromptTemplate.from_template(
 """
 )
 
-llm = ChatUpstage()
+    llm = ChatUpstage()
 
     # ✅ 중요: retriever는 dict 전체가 아니라 question 문자열만 받게!
     rag_chain = (
