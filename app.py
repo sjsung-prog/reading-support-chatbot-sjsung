@@ -118,17 +118,17 @@ def load_rag_chain():
 
     # ✅ 중요: retriever는 dict 전체가 아니라 question 문자열만 받게!
     rag_chain = (
-        {
-            "context": lambda x: retriever.invoke(x["question"]),
-            "question": lambda x: x["question"],
-            "profile": lambda x: x["profile"],
-            "menu": lambda x: x["menu"],
-            "mode_guide": lambda x: x["mode_guide"],
-        level = st.select_slider(
-            "읽기 수준",
-            options=["쉬움", "보통", "어려움"],
-            value="보통"
-        )
+    {
+        "context": lambda x: retriever.invoke(x["question"]),
+        "question": lambda x: x["question"],
+        "profile": lambda x: x["profile"],
+        "menu": lambda x: x["menu"],
+        "mode_guide": lambda x: x["mode_guide"],
+    }
+    | prompt
+    | llm
+    | StrOutputParser()
+)
 
         st.caption("※ 입력할수록 추천 정확도가 높아집니다.")
 
