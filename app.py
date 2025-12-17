@@ -176,7 +176,7 @@ with st.sidebar:
         st.markdown("**🎯 맞춤형 도서 추천**")
 
         grade = st.selectbox("학년", ["초등", "중등", "고등"])
-        interest = st.text_input("관심 주제 (예: 우정, 추리, 과학)", "")
+        interest = st.text_input("관심 주제 (예: 우정, 인권, 경제)", "")
         level = st.select_slider(
             "읽기 수준",
             options=["쉬움", "보통", "어려움"],
