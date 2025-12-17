@@ -98,6 +98,8 @@ def load_rag_chain():
         BASE_PROMPT
         + """
 
+{mode_guide}
+
 [현재 기능]
 {menu}
 
@@ -120,6 +122,7 @@ def load_rag_chain():
             "question": lambda x: x["question"],
             "profile": lambda x: x["profile"],
             "menu": lambda x: x["menu"],
+            "mode_guide": lambda x: x["mode_guide"],
         }
         | prompt
         | llm
@@ -229,6 +232,7 @@ if user_input:
                 "question": question_for_rag,
                 "profile": profile,
                 "menu": menu
+                "mode_guide": MODE_PROMPT.get(menu, "")
             })
             st.markdown(answer)
 
