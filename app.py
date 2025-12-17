@@ -152,7 +152,7 @@ with st.sidebar:
 
 
     elif menu == "책 추천":
-        st.markdown("**맞춤형 도서 추천**")
+        st.markdown("**🎯 맞춤형 도서 추천**")
 
         grade = st.selectbox("학년", ["초등", "중등", "고등"])
         interest = st.text_input("관심 주제 (예: 우정, 추리, 과학)", "")
@@ -165,7 +165,7 @@ with st.sidebar:
         st.caption("※ 입력할수록 추천 정확도가 높아집니다.")
 
     else:  # 독서활동
-        st.markdown("**독서활동 관련 도움을 드려요.**")
+        st.markdown("**독서활동 관련 도움을 드려요**")
 
         # 회색 글씨로 연하게
         st.caption("📖 읽기 활동 ex) 올바른 독서법")
