@@ -82,7 +82,7 @@ def load_rag_chain():
 
     rag_chain = (
         {
-            "context": retriever,
+            "context": lambda x: retriever.invoke(x["question"]),
             "question": lambda x: x["question"],
             "profile": lambda x: x["profile"],
             "menu": lambda x: x["menu"],
