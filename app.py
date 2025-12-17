@@ -115,8 +115,7 @@ prompt = ChatPromptTemplate.from_template(
 """
 )
 
-
-    llm = ChatUpstage()
+llm = ChatUpstage()
 
     # ✅ 중요: retriever는 dict 전체가 아니라 question 문자열만 받게!
     rag_chain = (
