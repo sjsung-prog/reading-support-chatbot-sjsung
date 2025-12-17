@@ -134,7 +134,6 @@ with st.sidebar:
     st.subheader("📌 메뉴")
 
     menu = st.radio(
-        "기능 선택",
         ["도서관 이용 안내", "책 추천", "독서활동"],
         index=0
     )
@@ -142,13 +141,13 @@ with st.sidebar:
     st.divider()
 
     if menu == "도서관 이용 안내":
-        st.markdown("**도서관 이용 관련 질문을 도와드려요.**")
-        st.caption("예: 대출/반납/연장 방법, 이용 규정, 이용 시간 등")
+        st.markdown("**도서관 이용 방법에 대해 답해드립니다.**")
+        st.caption("예: 대출/반납 방법, 이용시간, 도서 검색 안내 등")
 
         st.markdown("**예시 질문**")
-        st.caption("• 대출 기간은 며칠이야?")
-        st.caption("• 반납이 늦으면 어떻게 돼?")
-        st.caption("• 대출 연장 방법 알려줘.")
+        st.caption("• 대출 권수 및 기간이 어떻게 돼?")
+        st.caption("• 도서관 홈페이지 이용법 알려줘")
+        st.caption("• 신간도서 신청하려면 어떻게 해?")
 
     elif menu == "책 추천":
         st.markdown("**학생 상황에 맞는 책 추천을 도와드려요.**")
@@ -160,7 +159,7 @@ with st.sidebar:
         st.caption("• 짧고 재미있는 추리소설 있어?")
 
     else:  # 독서활동
-        st.markdown("**독서활동(읽기/쓰기/그룹 활동) 관련 도움을 드려요.**")
+        st.markdown("**독서활동 관련 도움을 드려요.**")
 
         # 회색 글씨로 연하게
         st.caption("📖 읽기 활동 ex) 올바른 독서법")
@@ -171,9 +170,6 @@ with st.sidebar:
         st.caption("• 독후감 서론을 어떻게 시작하면 좋을까?")
         st.caption("• 독서토론 질문을 잘 만드는 방법은?")
         st.caption("• 서평과 독후감 차이가 뭐야?")
-
-    st.divider()
-    st.caption("※ 출처 문서 목록은 사용자 화면에 표시하지 않습니다.")
 
 
 # 채팅 히스토리 초기화
