@@ -231,7 +231,7 @@ if user_input:
             answer = rag_chain.invoke({
                 "question": question_for_rag,
                 "profile": profile,
-                "menu": menu
+                "menu": menu,
                 "mode_guide": MODE_PROMPT.get(menu, "")
             })
             st.markdown(answer)
