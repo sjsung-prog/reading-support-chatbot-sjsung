@@ -142,7 +142,16 @@ def load_rag_chain():
 
         st.write("") 
 
-보세요.")
+# 채팅 히스토리
+if "messages" not in st.session_state:
+    st.session_state["messages"] = []
+
+for msg in st.session_state["messages"]:
+    with st.chat_message(msg["role"]):
+        st.markdown(msg["content"])
+
+
+user_input = st.chat_input("궁금한 것을 물어보세요.")
 
 if user_input:
     st.session_state["messages"].append({"role": "user", "content": user_input})
