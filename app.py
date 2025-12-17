@@ -164,15 +164,21 @@ if user_input:
 
     profile = f"학년:{grade}, 관심:{interest or '없음'}, 읽기수준:{level}"
 
+    # ✅ (2) 프로필을 질문 텍스트에 섞어서 retriever에도 영향
+    # ✅ (3) 단, '책 추천' 탭에서만 적용
+    if menu == "책 추천":
+        question_for_rag = f"{user_input}\n\n[학생 정보] {profile}"
+    else:
+        question_for_rag = user_input
+
     with st.chat_message("assistant"):
         with st.spinner("생각 중입니다..."):
             answer = rag_chain.invoke({
-                "question": user_input,
+                "question": question_for_rag,   # ✅ 여기만 변경
                 "profile": profile,
                 "menu": menu
             })
             st.markdown(answer)
 
     st.session_state["messages"].append({"role": "assistant", "content": answer})
-
 
