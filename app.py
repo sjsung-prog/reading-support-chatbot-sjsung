@@ -123,7 +123,7 @@ def load_rag_chain():
             "question": lambda x: x["question"],
             "profile": lambda x: x["profile"],
             "menu": lambda x: x["menu"],
-            "mode_guide": lambda x: x["mod제)", "")
+            "mode_guide": lambda x: x["mode_guide"],
         level = st.select_slider(
             "읽기 수준",
             options=["쉬움", "보통", "어려움"],
