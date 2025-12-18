@@ -67,7 +67,7 @@ def download_and_unpack_chroma_db():
     if os.path.exists("chroma_db.zip"):
         os.remove("chroma_db.zip")
 
-    st.write("⬇ 벡터 DB(chroma_db.zip)를 불러오는 중입니다...")
+    print("⬇ 벡터 DB(chroma_db.zip)를 불러오는 중입니다...")
     gdown.download(url, "chroma_db.zip", quiet=False)
 
     if os.path.getsize("chroma_db.zip") < 1000:
