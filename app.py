@@ -163,19 +163,6 @@ with st.sidebar:
     )
 
     st.divider()
-    st.subheader("📄 리포트 다운로드")
-
-pdf_data = build_chat_pdf(
-    st.session_state.get("messages", []),
-    meta={"menu": menu, "profile": profile}
-)
-
-st.download_button(
-    label="PDF 리포트 다운로드",
-    data=pdf_data,
-    file_name="chat_report.pdf",
-    mime="application/pdf",
-)
 
     # 기본값
     grade = "없음"
@@ -222,6 +209,21 @@ st.download_button(
         st.caption("• 독서토론 질문을 잘 만드는 방법은?")
         st.caption("• 서평과 독후감 차이가 뭐야?")
 
+# 🔽 여기부터가 사이드바 하단 영역
+    st.divider()
+    st.subheader("📄 리포트")
+
+    pdf_data = build_chat_pdf(
+        st.session_state.get("messages", []),
+        meta={"menu": menu, "profile": f"학교급:{grade}, 관심:{interest or '없음'}, 읽기수준:{level}"}
+    )
+
+    st.download_button(
+        label="대화 리포트 PDF 다운로드",
+        data=pdf_data,
+        file_name="chat_report.pdf",
+        mime="application/pdf",
+    )
 
 
 # 채팅 히스토리
