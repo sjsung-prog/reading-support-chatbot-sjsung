@@ -66,6 +66,37 @@ MODE_PROMPT = {
 }
 
 
+def wrap_lines(text, max_chars=60):
+        # 아주 단순한 줄바꿈(한글도 무난). 더 정교하게 하려면 글자 폭 계산 가능.
+        lines = []
+        for paragraph in str(text).split("\n"):
+            while len(paragraph) > max_chars:
+                lines.append(paragraph[:max_chars])
+                paragraph = paragraph[max_chars:]
+            lines.append(paragraph)
+        return lines
+
+    c.setFont("NotoSansKR", 11)
+
+    for m in messages:
+        role = "학생" if m.get("role") == "user" else "챗봇"
+        header = f"[{role}]"
+        lines = [header] + wrap_lines(m.get("content", ""), max_chars=65) + [""]
+
+        for line in lines:
+            if y < 60:
+                c.showPage()
+                c.setFont("NotoSansKR", 11)
+                y = top
+            c.drawString(left, y, line)
+            y -= 14
+
+    c.save()
+    pdf_bytes = buf.getvalue()
+    buf.close()
+    return pdf_bytes
+
+
 def download_and_unpack_chroma_db():
     file_id = "1XXyTjn8-yxa795E3k4stplJfNdFDyro2"
     url = f"https://drive.google.com/uc?id={file_id}"
@@ -210,15 +241,15 @@ with st.sidebar:
         st.caption("• 서평과 독후감 차이가 뭐야?")
 
 # 🔽 여기부터가 사이드바 하단 영역
-    st.divider()
-    st.subheader("📄 리포트")
+        st.divider()
+        st.subheader("📄 리포트")
 
-    pdf_data = build_chat_pdf(
+        pdf_data = build_chat_pdf(
         st.session_state.get("messages", []),
         meta={"menu": menu, "profile": f"학교급:{grade}, 관심:{interest or '없음'}, 읽기수준:{level}"}
     )
 
-    st.download_button(
+        st.download_button(
         label="대화 리포트 PDF 다운로드",
         data=pdf_data,
         file_name="chat_report.pdf",
@@ -302,36 +333,8 @@ def build_chat_pdf(messages, title="학교도서관 독서활동 지원 챗봇 �
     y -= 6
     c.line(left, y, width - left, y)
     y -= 18
-
-    def wrap_lines(text, max_chars=60):
-        # 아주 단순한 줄바꿈(한글도 무난). 더 정교하게 하려면 글자 폭 계산 가능.
-        lines = []
-        for paragraph in str(text).split("\n"):
-            while len(paragraph) > max_chars:
-                lines.append(paragraph[:max_chars])
-                paragraph = paragraph[max_chars:]
-            lines.append(paragraph)
-        return lines
-
-    c.setFont("NotoSansKR", 11)
-
-    for m in messages:
-        role = "학생" if m.get("role") == "user" else "챗봇"
-        header = f"[{role}]"
-        lines = [header] + wrap_lines(m.get("content", ""), max_chars=65) + [""]
-
-        for line in lines:
-            if y < 60:
-                c.showPage()
-                c.setFont("NotoSansKR", 11)
-                y = top
-            c.drawString(left, y, line)
-            y -= 14
-
-    c.save()
-    pdf_bytes = buf.getvalue()
-    buf.close()
-    return pdf_bytes
+    
+    
 
 
   
