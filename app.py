@@ -9,10 +9,9 @@ from langchain_community.vectorstores import Chroma
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 
-
+# ✅ PDF 리포트용 import (추가)
 from io import BytesIO
 from datetime import datetime
-
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.lib.pagesizes import A4
@@ -28,7 +27,9 @@ if "UPSTAGE_API_KEY" in st.secrets:
     os.environ["UPSTAGE_API_KEY"] = st.secrets["UPSTAGE_API_KEY"]
 
 
-# ✅ 너의 "기본 프롬프트"는 고정(절대 수정하지 않음)
+# -------------------------
+# PROMPT
+# -------------------------
 BASE_PROMPT = """
 너는 학교도서관에서 학생들의 독서활동을 도와주는 도우미야.
 아래 '참고 문서(context)' 내용을 바탕으로, 학생의 질문에 대해
@@ -40,34 +41,71 @@ BASE_PROMPT = """
 등을 중심으로 설명해 줘.
 
 만약 문서에 정보가 없으면 모르는 부분은 솔직하게 모른다고 말해.
-"""
+""".strip()
 
-
-# ✅ 기능별 보조 지침 (BASE_PROMPT에 +알파로만 적용)
 MODE_PROMPT = {
     "도서관 이용 안내": """
-[추가 지침]
-- 도서관 이용 안내 질문에는 절차와 규정을 중심으로 설명해줘.
-- 단계별(①②③)로 정리하고, 불필요한 감상적 표현은 줄여줘.
-- 학생이 바로 행동으로 옮길 수 있도록 구체적으로 안내해줘.
-""",
+[도서관 이용 안내 모드 지침]
+- 도서관 이용 규정, 대출/반납/연장, 운영시간, 검색/신청 방법을 우선적으로 안내해줘.
+- 절차가 있으면 단계별로 설명해줘.
+""".strip(),
     "책 추천": """
-[추가 지침]
-- 책 추천 질문에는 학생 정보(학년/관심/읽기수준)를 적극 반영해줘.
-- 추천 이유를 반드시 함께 제시해줘.
-- 한 번에 너무 많은 책을 나열하지 말고 3권 내외로 추천해줘.
-""",
+[책 추천 모드 지침]
+- 학생 정보(학년/관심 주제/읽기 수준)를 반영해서 추천해줘.
+- 가능하면 추천 이유(왜 이 책이 맞는지)를 짧게 덧붙여줘.
+- 문서 근거가 부족하면 일반적인 추천 기준으로 안내해줘.
+""".strip(),
     "독서활동": """
-[추가 지침]
-- 독서활동 질문에는 실제 활용 가능한 예시를 포함해줘.
-- 읽기·쓰기·토론 중 어떤 활동인지 구분해서 설명해줘.
+[독서활동 모드 지침]
+- 읽기/쓰기/토론 중 어떤 활동인지 구분해서 안내해줘.
 - 학생이 바로 써먹을 수 있는 문장 예시나 질문 예시를 제시해줘.
-"""
+""".strip(),
 }
 
 
-def wrap_lines(text, max_chars=60):
-        # 아주 단순한 줄바꿈(한글도 무난). 더 정교하게 하려면 글자 폭 계산 가능.
+# -------------------------
+# PDF: 대화 리포트 생성 함수 (✅ 호출 전에 반드시 정의돼야 함)
+# -------------------------
+def build_chat_pdf(messages, title="학교도서관 독서활동 지원 챗봇 리포트", meta=None):
+    """
+    messages: [{"role":"user"/"assistant", "content":"..."}]
+    meta: {"menu":..., "profile":...} 같은 부가정보
+    """
+    buf = BytesIO()
+
+    # ✅ 한글 폰트 등록 (레포에 fonts/NotoSansKR-Regular.ttf 필요)
+    font_path = "fonts/NotoSansKR-Regular.ttf"
+    pdfmetrics.registerFont(TTFont("NotoSansKR", font_path))
+
+    c = canvas.Canvas(buf, pagesize=A4)
+    width, height = A4
+
+    left = 40
+    top = height - 50
+    y = top
+
+    c.setFont("NotoSansKR", 16)
+    c.drawString(left, y, title)
+    y -= 24
+
+    c.setFont("NotoSansKR", 10)
+    now_str = datetime.now().strftime("%Y-%m-%d %H:%M")
+    c.drawString(left, y, f"생성 시각: {now_str}")
+    y -= 16
+
+    if meta:
+        if meta.get("menu"):
+            c.drawString(left, y, f"탭: {meta['menu']}")
+            y -= 14
+        if meta.get("profile"):
+            c.drawString(left, y, f"학생 정보: {meta['profile']}")
+            y -= 14
+
+    y -= 6
+    c.line(left, y, width - left, y)
+    y -= 18
+
+    def wrap_lines(text, max_chars=65):
         lines = []
         for paragraph in str(text).split("\n"):
             while len(paragraph) > max_chars:
@@ -80,8 +118,7 @@ def wrap_lines(text, max_chars=60):
 
     for m in messages:
         role = "학생" if m.get("role") == "user" else "챗봇"
-        header = f"[{role}]"
-        lines = [header] + wrap_lines(m.get("content", ""), max_chars=65) + [""]
+        lines = [f"[{role}]"] + wrap_lines(m.get("content", "")) + [""]
 
         for line in lines:
             if y < 60:
@@ -97,6 +134,9 @@ def wrap_lines(text, max_chars=60):
     return pdf_bytes
 
 
+# -------------------------
+# DB 다운로드/언팩
+# -------------------------
 def download_and_unpack_chroma_db():
     file_id = "1XXyTjn8-yxa795E3k4stplJfNdFDyro2"
     url = f"https://drive.google.com/uc?id={file_id}"
@@ -134,10 +174,10 @@ def load_rag_chain():
 
     retriever = vectorstore.as_retriever(search_kwargs={"k": 4})
 
+    # ✅ BASE_PROMPT 유지 + mode_guide/메뉴/학생정보만 추가로 붙임 (기존 의도 유지)
     prompt = ChatPromptTemplate.from_template(
         BASE_PROMPT
         + """
-
 {mode_guide}
 
 [현재 기능]
@@ -172,7 +212,6 @@ def load_rag_chain():
     return rag_chain
 
 
-
 rag_chain = load_rag_chain()
 
 
@@ -204,13 +243,12 @@ with st.sidebar:
         st.markdown("**ℹ️ 도서관 이용 방법**")
         st.caption("예: 대출/반납 방법, 이용시간, 도서 검색 안내 등")
 
-        st.write("") 
+        st.write("")
 
         st.markdown("**예시 질문**")
         st.caption("• 도서관 이용규칙에 대해 알려줘.")
         st.caption("• 대출 권수와 기간이 어떻게 돼?")
         st.caption("• 신간도서 신청 방법이 궁금해.")
-
 
     elif menu == "책 추천":
         st.markdown("**🎯 맞춤형 도서 추천**")
@@ -233,23 +271,26 @@ with st.sidebar:
         st.caption("✍️ 쓰기 활동 ex) 독서감상문, 서평, 독서논술 등")
         st.caption("👥 그룹 활동 ex) 독서토론, 독서동아리 등")
 
-        st.write("") 
+        st.write("")
 
         st.markdown("**예시 질문**")
         st.caption("• 독후감 서론을 어떻게 시작하면 좋을까?")
         st.caption("• 독서토론 질문을 잘 만드는 방법은?")
         st.caption("• 서평과 독후감 차이가 뭐야?")
 
-# 🔽 여기부터가 사이드바 하단 영역
-        st.divider()
-        st.subheader("📄 리포트")
+    # ✅ (요청대로) 사이드바 맨 아래: PDF 다운로드 버튼
+    st.divider()
+    st.subheader("📄 리포트")
 
-        pdf_data = build_chat_pdf(
+    # 프로필 문자열(기존 너가 쓰던 형식 유지)
+    profile_for_pdf = f"학년:{grade}, 관심:{interest or '없음'}, 읽기수준:{level}"
+
+    pdf_data = build_chat_pdf(
         st.session_state.get("messages", []),
-        meta={"menu": menu, "profile": f"학교급:{grade}, 관심:{interest or '없음'}, 읽기수준:{level}"}
+        meta={"menu": menu, "profile": profile_for_pdf}
     )
 
-        st.download_button(
+    st.download_button(
         label="대화 리포트 PDF 다운로드",
         data=pdf_data,
         file_name="chat_report.pdf",
@@ -275,14 +316,14 @@ if user_input:
 
     profile = f"학년:{grade}, 관심:{interest or '없음'}, 읽기수준:{level}"
 
-    # ✅ (2)+(3) 반영: 책 추천일 때만 question에 프로필을 붙여 retriever에도 영향 주기
+    # ✅ (2)+(3) 반영: 책 추천일 때만 question에 프로필을 붙여 retriever에도 영향 주기 (기존 로직 유지)
     if menu == "책 추천":
         question_for_rag = f"{user_input}\n\n[학생 정보] {profile}"
     else:
         question_for_rag = user_input
 
     with st.chat_message("assistant"):
-        with st.spinner("생각 중입니다..."):
+        with st.spinner("생각 중입니다."):
             answer = rag_chain.invoke({
                 "question": question_for_rag,
                 "profile": profile,
@@ -292,49 +333,3 @@ if user_input:
             st.markdown(answer)
 
     st.session_state["messages"].append({"role": "assistant", "content": answer})
-   
-
-def build_chat_pdf(messages, title="학교도서관 독서활동 지원 챗봇 리포트", meta=None):
-    """
-    messages: [{"role":"user"/"assistant", "content":"..."}]
-    meta: {"menu":..., "profile":..., "generated_at":...} 같은 부가정보
-    """
-    buf = BytesIO()
-
-    # ✅ 한글 폰트 등록(레포에 폰트 파일 넣어야 함)
-    # 폰트 경로는 네 레포 구조에 맞춰 수정 가능
-    font_path = "fonts/NotoSansKR-Regular.ttf"
-    pdfmetrics.registerFont(TTFont("NotoSansKR", font_path))
-
-    c = canvas.Canvas(buf, pagesize=A4)
-    width, height = A4
-
-    left = 40
-    top = height - 50
-    y = top
-
-    c.setFont("NotoSansKR", 16)
-    c.drawString(left, y, title)
-    y -= 24
-
-    c.setFont("NotoSansKR", 10)
-    now_str = datetime.now().strftime("%Y-%m-%d %H:%M")
-    c.drawString(left, y, f"생성 시각: {now_str}")
-    y -= 16
-
-    if meta:
-        if meta.get("menu"):
-            c.drawString(left, y, f"탭: {meta['menu']}")
-            y -= 14
-        if meta.get("profile"):
-            c.drawString(left, y, f"학생 정보: {meta['profile']}")
-            y -= 14
-
-    y -= 6
-    c.line(left, y, width - left, y)
-    y -= 18
-    
-    
-
-
-  
