@@ -10,6 +10,15 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import StrOutputParser
 
 
+from io import BytesIO
+from datetime import datetime
+
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
+from reportlab.lib.pagesizes import A4
+from reportlab.pdfgen import canvas
+
+
 # ✅ set_page_config는 가능한 한 위에서 1번만
 st.set_page_config(page_title="학교도서관 독서활동 지원 챗봇", page_icon="📚")
 
@@ -154,6 +163,19 @@ with st.sidebar:
     )
 
     st.divider()
+    st.subheader("📄 리포트 다운로드")
+
+pdf_data = build_chat_pdf(
+    st.session_state.get("messages", []),
+    meta={"menu": menu, "profile": profile}
+)
+
+st.download_button(
+    label="PDF 리포트 다운로드",
+    data=pdf_data,
+    file_name="chat_report.pdf",
+    mime="application/pdf",
+)
 
     # 기본값
     grade = "없음"
@@ -239,6 +261,75 @@ if user_input:
     st.session_state["messages"].append({"role": "assistant", "content": answer})
    
 
+def build_chat_pdf(messages, title="학교도서관 독서활동 지원 챗봇 리포트", meta=None):
+    """
+    messages: [{"role":"user"/"assistant", "content":"..."}]
+    meta: {"menu":..., "profile":..., "generated_at":...} 같은 부가정보
+    """
+    buf = BytesIO()
+
+    # ✅ 한글 폰트 등록(레포에 폰트 파일 넣어야 함)
+    # 폰트 경로는 네 레포 구조에 맞춰 수정 가능
+    font_path = "fonts/NotoSansKR-Regular.ttf"
+    pdfmetrics.registerFont(TTFont("NotoSansKR", font_path))
+
+    c = canvas.Canvas(buf, pagesize=A4)
+    width, height = A4
+
+    left = 40
+    top = height - 50
+    y = top
+
+    c.setFont("NotoSansKR", 16)
+    c.drawString(left, y, title)
+    y -= 24
+
+    c.setFont("NotoSansKR", 10)
+    now_str = datetime.now().strftime("%Y-%m-%d %H:%M")
+    c.drawString(left, y, f"생성 시각: {now_str}")
+    y -= 16
+
+    if meta:
+        if meta.get("menu"):
+            c.drawString(left, y, f"탭: {meta['menu']}")
+            y -= 14
+        if meta.get("profile"):
+            c.drawString(left, y, f"학생 정보: {meta['profile']}")
+            y -= 14
+
+    y -= 6
+    c.line(left, y, width - left, y)
+    y -= 18
+
+    def wrap_lines(text, max_chars=60):
+        # 아주 단순한 줄바꿈(한글도 무난). 더 정교하게 하려면 글자 폭 계산 가능.
+        lines = []
+        for paragraph in str(text).split("\n"):
+            while len(paragraph) > max_chars:
+                lines.append(paragraph[:max_chars])
+                paragraph = paragraph[max_chars:]
+            lines.append(paragraph)
+        return lines
+
+    c.setFont("NotoSansKR", 11)
+
+    for m in messages:
+        role = "학생" if m.get("role") == "user" else "챗봇"
+        header = f"[{role}]"
+        lines = [header] + wrap_lines(m.get("content", ""), max_chars=65) + [""]
+
+        for line in lines:
+            if y < 60:
+                c.showPage()
+                c.setFont("NotoSansKR", 11)
+                y = top
+            c.drawString(left, y, line)
+            y -= 14
+
+    c.save()
+    pdf_bytes = buf.getvalue()
+    buf.close()
+    return pdf_bytes
 
 
   
