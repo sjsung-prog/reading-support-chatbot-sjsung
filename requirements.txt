@@ -8,4 +8,3 @@ langchain-upstage
 chromadb>=0.4.24
 requests
 gdown
-reportlab
